@@ -1,4 +1,5 @@
-import { isFunction, isObjectOrFunction, noop, CONFIG } from './utils'
+import { isFunction, isObjectOrFunction, CONFIG } from './utils'
+import triggerTick, { addQueue } from './tick'
 
 function getThen (promise, x) {
   try {
@@ -10,10 +11,12 @@ function getThen (promise, x) {
 
 function fulfill (promise, value) {
   if (promise._status === CONFIG.PENDING) {
-    promise._sequence.forEach((q, i) => {
-      if ((i + 3) % 3 === CONFIG.FULFILLED && q) {
-        q(value)
-      }
+    triggerTick(() => {
+      promise._sequence.forEach((q, i) => {
+        if ((i + 3) % 3 === CONFIG.FULFILLED && q) {
+          addQueue(q, value)
+        }
+      })
     })
 
     promise._status = CONFIG.FULFILLED
@@ -46,7 +49,17 @@ export function resolve (promise, x) {
 }
 
 export function reject (promise, reason) {
+  if (promise._status === CONFIG.PENDING) {
+    triggerTick(() => {
+      promise._sequence.forEach((q, i) => {
+        if ((i + 3) % 3 === CONFIG.REJECTED && q) {
+          addQueue(q, reason)
+        }
+      })
+    })
 
+    promise._status = CONFIG.REJECTED
+  }
 }
 
 // 这才是 then 开始
@@ -57,5 +70,5 @@ export function then (promise, onFulfilled, onRejected) {
   sequence[length + CONFIG.FULFILLED] = isFunction(onFulfilled) ? onFulfilled : null
   sequence[length + CONFIG.REJECTED] = isFunction(onRejected) ? onRejected : null
 
-  return new promise.constructor(noop)
+  return promise
 }

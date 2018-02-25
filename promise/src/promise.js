@@ -1,4 +1,4 @@
-import { CONFIG, noop } from './utils'
+import { CONFIG } from './utils'
 import { runPromise } from './run'
 import { then } from './then'
 
@@ -15,7 +15,7 @@ export default class Promise {
     return then(this, onFulfilled, onRejected)
   }
 
-  catch () {
-    return new this.constructor(noop)
+  catch (onRejected) {
+    return then(this, null, onRejected)
   }
 }
