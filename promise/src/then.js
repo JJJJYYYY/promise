@@ -1,4 +1,4 @@
-import { isFunction, isObjectOrFunction, CONFIG } from './utils'
+import { isFunction, isObjectOrFunction, CONFIG, noop } from './utils'
 import triggerTick, { addQueue } from './tick'
 
 function getThen (promise, x) {
@@ -14,7 +14,7 @@ function fulfill (promise, value) {
     triggerTick(() => {
       promise._sequence.forEach((q, i) => {
         if ((i + 3) % 3 === CONFIG.FULFILLED && q) {
-          addQueue(q, value)
+          addQueue(q, value, promise._sequence[i - CONFIG.FULFILLED])
         }
       })
     })
@@ -26,7 +26,7 @@ function fulfill (promise, value) {
 export function resolve (promise, x) {
   if (promise === x) { // x 与 promise 相等
     reject(promise, new TypeError('x 不能与 promise 相等'))
-  } else if (isFunction(x.then)) { // x 为 Promise，这个判断方法应该不正确
+  } else if (x && isFunction(x.then)) { // x 为 Promise，这个判断方法应该不正确
     x.then(value => {
       fulfill(promise, value)
     }, reason => {
@@ -53,7 +53,8 @@ export function reject (promise, reason) {
     triggerTick(() => {
       promise._sequence.forEach((q, i) => {
         if ((i + 3) % 3 === CONFIG.REJECTED && q) {
-          addQueue(q, reason)
+          debugger
+          addQueue(q, reason, promise._sequence[i - CONFIG.REJECTED])
         }
       })
     })
@@ -66,9 +67,9 @@ export function reject (promise, reason) {
 export function then (promise, onFulfilled, onRejected) {
   let sequence = promise._sequence
   let length = sequence.length
-  sequence[length] = promise
+  sequence[length] = new promise.constructor(noop)
   sequence[length + CONFIG.FULFILLED] = isFunction(onFulfilled) ? onFulfilled : null
   sequence[length + CONFIG.REJECTED] = isFunction(onRejected) ? onRejected : null
 
-  return promise
+  return sequence[length]
 }

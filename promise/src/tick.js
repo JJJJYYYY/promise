@@ -1,3 +1,5 @@
+import { resolve } from './then'
+
 const browserWindow = (typeof window !== 'undefined') ? window : undefined
 let browserGlobal = browserWindow || {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
@@ -13,16 +15,18 @@ browserGlobal = null
 let triggerTick
 let queue = []
 
-export function addQueue (callback, arg) {
+export function addQueue (callback, arg, promise) {
   queue.push({
     callback: callback,
-    arg: arg
+    arg: arg,
+    promise: promise
   })
 }
 
 function execute () {
   queue = queue.filter(q => {
-    q.callback.call(null, q.arg)
+    let re = q.callback.call(null, q.arg)
+    if (re) resolve(q.promise, re)
     return false
   })
 }

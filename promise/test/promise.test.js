@@ -8,16 +8,19 @@ var a = new Promise(function (resolve, reject) {
   }, 1000)
 })
   .then((data) => {
-    console.log(data)
-    return new Promise(function (resolve, reject) {
-      // throw new Error()
-      setTimeout(() => {
-        resolve('222')
-      }, 1000)
-    })
+    console.log(data, 0)
+    return Promise.resolve(data)
   })
   .then((data) => {
-    console.log(data)
+    console.log(data, 1)
+    return Promise.reject(data)
+  })
+  .then((data) => {
+    console.log(data, 2)
+    return Promise.resolve(data)
+  })
+  .then((data) => {
+    console.log(data, 3)
   })
   .catch((data) => {
     console.log(1)

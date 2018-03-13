@@ -18,4 +18,12 @@ export default class Promise {
   catch (onRejected) {
     return then(this, null, onRejected)
   }
+
+  static resolve (data) {
+    return new this(resolve => resolve(data))
+  }
+
+  static reject (reason) {
+    return new this((resolve, reject) => reject(reason))
+  }
 }
