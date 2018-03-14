@@ -13,8 +13,8 @@ function fulfill (promise, value) {
   if (promise._status === CONFIG.PENDING) {
     triggerTick(() => {
       promise._sequence.forEach((q, i) => {
-        if ((i + 3) % 3 === CONFIG.FULFILLED && q) {
-          addQueue(q, value, promise._sequence[i - CONFIG.FULFILLED])
+        if ((i + 3) % 3 === CONFIG.FULFILLED) {
+          addQueue(q || promise.constructor.resolve, value, promise._sequence[i - CONFIG.FULFILLED])
         }
       })
     })
@@ -52,9 +52,8 @@ export function reject (promise, reason) {
   if (promise._status === CONFIG.PENDING) {
     triggerTick(() => {
       promise._sequence.forEach((q, i) => {
-        if ((i + 3) % 3 === CONFIG.REJECTED && q) {
-          debugger
-          addQueue(q, reason, promise._sequence[i - CONFIG.REJECTED])
+        if ((i + 3) % 3 === CONFIG.REJECTED) {
+          addQueue(q || promise.constructor.reject, reason, promise._sequence[i - CONFIG.REJECTED])
         }
       })
     })

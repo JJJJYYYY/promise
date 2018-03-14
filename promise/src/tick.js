@@ -25,7 +25,7 @@ export function addQueue (callback, arg, promise) {
 
 function execute () {
   queue = queue.filter(q => {
-    let re = q.callback.call(null, q.arg)
+    let re = q.callback.call(q.promise.constructor, q.arg)
     if (re) resolve(q.promise, re)
     return false
   })

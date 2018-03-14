@@ -8,7 +8,10 @@ dist/
 .DS_Store
 
 # logs
-npm-debug.log*
+*.log*
+
+# Mac
+.MS_Store
 
 # Editor directories
 .idea

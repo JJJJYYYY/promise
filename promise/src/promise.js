@@ -20,10 +20,10 @@ export default class Promise {
   }
 
   static resolve (data) {
-    return new this(resolve => resolve(data))
+    return new Promise(resolve => resolve(data))
   }
 
   static reject (reason) {
-    return new this((resolve, reject) => reject(reason))
+    return new Promise((resolve, reject) => reject(reason))
   }
 }
