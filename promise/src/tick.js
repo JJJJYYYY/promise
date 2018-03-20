@@ -35,7 +35,6 @@ if (isNode) {
   triggerTick = (cb) => {
     process.nextTick(() => {
       cb()
-      execute()
     })
   }
 } else if (BrowserMutationObserver) {

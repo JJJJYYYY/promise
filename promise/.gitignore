@@ -10,9 +10,6 @@ dist/
 # logs
 *.log*
 
-# Mac
-.MS_Store
-
 # Editor directories
 .idea
 .vscode

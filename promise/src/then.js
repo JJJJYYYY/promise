@@ -1,5 +1,5 @@
 import { isFunction, isObjectOrFunction, CONFIG, noop } from './utils'
-import triggerTick, { addQueue } from './tick'
+import triggerTick from './tick'
 
 function getThen (promise, x) {
   try {
@@ -12,11 +12,17 @@ function getThen (promise, x) {
 function fulfill (promise, value) {
   if (promise._status === CONFIG.PENDING) {
     triggerTick(() => {
-      promise._sequence.forEach((q, i) => {
-        if ((i + 3) % 3 === CONFIG.FULFILLED) {
-          addQueue(q || promise.constructor.resolve, value, promise._sequence[i - CONFIG.FULFILLED])
+      let i = 0
+      let quence = promise._sequence
+      while (quence[i]) {
+        try {
+          resolve(quence[i], (quence[i + CONFIG.FULFILLED] || promise.constructor.resolve)(value))
+        } catch (e) {
+          reject(quence[i], e)
         }
-      })
+
+        i += 3
+      }
     })
 
     promise._status = CONFIG.FULFILLED
@@ -27,7 +33,8 @@ export function resolve (promise, x) {
   if (promise === x) { // x 与 promise 相等
     reject(promise, new TypeError('x 不能与 promise 相等'))
   } else if (x && isFunction(x.then)) { // x 为 Promise，这个判断方法应该不正确
-    x.then(value => {
+    let then = x.then.bind(x) // 需要 缓存下 then?
+    then(value => {
       fulfill(promise, value)
     }, reason => {
       reject(promise, reason)
@@ -51,11 +58,17 @@ export function resolve (promise, x) {
 export function reject (promise, reason) {
   if (promise._status === CONFIG.PENDING) {
     triggerTick(() => {
-      promise._sequence.forEach((q, i) => {
-        if ((i + 3) % 3 === CONFIG.REJECTED) {
-          addQueue(q || promise.constructor.reject, reason, promise._sequence[i - CONFIG.REJECTED])
+      let i = 0
+      let quence = promise._sequence
+      while (quence[i]) {
+        try {
+          resolve(quence[i], (quence[i + CONFIG.REJECTED] || promise.constructor.reject)(reason))
+        } catch (e) {
+          reject(quence[i], e)
         }
-      })
+
+        i += 3
+      }
     })
 
     promise._status = CONFIG.REJECTED
