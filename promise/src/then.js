@@ -32,13 +32,6 @@ function fulfill (promise, value) {
 export function resolve (promise, x) {
   if (promise === x) { // x 与 promise 相等
     reject(promise, new TypeError('x 不能与 promise 相等'))
-  } else if (x && isFunction(x.then)) { // x 为 Promise，这个判断方法应该不正确
-    let then = x.then.bind(x) // 需要 缓存下 then?
-    then(value => {
-      fulfill(promise, value)
-    }, reason => {
-      reject(promise, reason)
-    })
   } else if (isObjectOrFunction(x)) {
     let then = getThen(promise, x)
     if (isFunction(then)) {
