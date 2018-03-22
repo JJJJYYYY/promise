@@ -23,6 +23,8 @@ function fulfill (promise, value) {
 
         i += 3
       }
+
+      promise._sequence = []
     })
 
     promise._status = CONFIG.FULFILLED
@@ -35,11 +37,15 @@ export function resolve (promise, x) {
   } else if (isObjectOrFunction(x)) {
     let then = getThen(promise, x)
     if (isFunction(then)) {
-      then.call(x, function resolvePromise (y) {
-        resolve(promise, y)
-      }, function rejectPromise (r) {
-        reject(promise, r)
-      })
+      try {
+        then.call(x, function resolvePromise (y) {
+          resolve(promise, y)
+        }, function rejectPromise (r) {
+          reject(promise, r)
+        })
+      } catch (e) {
+        reject(promise, e)
+      }
     } else {
       fulfill(promise, x)
     }
@@ -62,6 +68,8 @@ export function reject (promise, reason) {
 
         i += 3
       }
+
+      promise._sequence = []
     })
 
     promise._status = CONFIG.REJECTED
