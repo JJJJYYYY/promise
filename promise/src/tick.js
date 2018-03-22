@@ -1,5 +1,3 @@
-import { resolve } from './then'
-
 const browserWindow = (typeof window !== 'undefined') ? window : undefined
 let browserGlobal = browserWindow || {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
@@ -23,14 +21,6 @@ export function addQueue (callback, arg, promise) {
   })
 }
 
-function execute () {
-  queue = queue.filter(q => {
-    let re = q.callback.call(q.promise.constructor, q.arg)
-    if (re) resolve(q.promise, re)
-    return false
-  })
-}
-
 if (isNode) {
   triggerTick = (cb) => {
     process.nextTick(() => {
@@ -43,7 +33,6 @@ if (isNode) {
   let callback = null
   let observer = new BrowserMutationObserver(() => {
     callback()
-    execute()
   })
   observer.observer(node, { characterData: true })
 
@@ -56,14 +45,10 @@ if (isNode) {
   const channel = new MessageChannel()
   channel.port1.onmessage = () => {
     callback()
-    execute()
   }
   triggerTick = () => channel.port2.postMessage(0)
 } else {
-  triggerTick = callback => setTimeout(() => {
-    callback()
-    execute()
-  }, 1)
+  triggerTick = callback => setTimeout(callback, 0)
 }
 
 export default triggerTick
