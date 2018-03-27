@@ -1,8 +1,8 @@
 {
-  "name": "rollup_tool",
+  "name": "j-promise",
   "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/JJJJYYYY/rollup_tool.git",
+  "main": "dist/bundle.js",
+  "repository": "https://github.com/JJJJYYYY/promise.git",
   "author": "JJJJYYYY",
   "license": "MIT",
   "scripts": {
@@ -33,9 +33,5 @@
     "rollup-plugin-eslint": "^4.0.0",
     "uglify-js": "^3.3.8",
     "zlib": "^1.0.5"
-  },
-  "dependencies": {
-    "bluebird": "^3.5.1",
-    "es6-promise": "^4.2.4"
   }
 }
