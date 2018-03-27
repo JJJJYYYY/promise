@@ -1,6 +1,9 @@
 import { isFunction, isObjectOrFunction, CONFIG, noop } from './utils'
 import triggerTick from './tick'
 
+const fulfilledDefaultFun = value => value
+const rejectedDefaultFun = reason => { throw reason }
+
 function getThen (promise, x) {
   try {
     return x.then
@@ -9,17 +12,13 @@ function getThen (promise, x) {
   }
 }
 
-function nextTick (promise, result) {
+function addNextTick (promise, result) {
   triggerTick(() => {
-    let handle = promise._status === CONFIG.FULFILLED
-      ? promise.constructor.resolve
-      : promise.constructor.reject
-
     let i = 0
     let quence = promise._sequence
     while (quence[i]) {
       try {
-        resolve(quence[i], (quence[i + promise._status] || handle)(result))
+        resolve(quence[i], (true && quence[i + promise._status])(result))
       } catch (e) {
         reject(quence[i], e)
       }
@@ -33,11 +32,15 @@ function nextTick (promise, result) {
 
 function fulfill (promise, value) {
   if (promise._status === CONFIG.PENDING) {
-    nextTick(promise, value)
+    addNextTick(promise, value)
 
     promise._result = value
     promise._status = CONFIG.FULFILLED
   }
+}
+
+function readyTick (promise) {
+  if (promise._status !== CONFIG.PENDING) addNextTick(promise, promise._result)
 }
 
 export function resolve (promise, x) {
@@ -68,15 +71,11 @@ export function resolve (promise, x) {
 
 export function reject (promise, reason) {
   if (promise._status === CONFIG.PENDING) {
-    nextTick(promise, reason)
+    addNextTick(promise, reason)
 
     promise._result = reason
     promise._status = CONFIG.REJECTED
   }
-}
-
-function readyTick (promise) {
-  if (promise._status !== CONFIG.PENDING) nextTick(promise, promise._result)
 }
 
 // 这才是 then 开始
@@ -84,8 +83,8 @@ export function then (promise, onFulfilled, onRejected) {
   let sequence = promise._sequence
   let length = sequence.length
   sequence[length] = new promise.constructor(noop)
-  sequence[length + CONFIG.FULFILLED] = isFunction(onFulfilled) ? onFulfilled : null
-  sequence[length + CONFIG.REJECTED] = isFunction(onRejected) ? onRejected : null
+  sequence[length + CONFIG.FULFILLED] = isFunction(onFulfilled) ? onFulfilled : fulfilledDefaultFun
+  sequence[length + CONFIG.REJECTED] = isFunction(onRejected) ? onRejected : rejectedDefaultFun
   readyTick(promise) // 对于已解决的 promise 需要将结果，在下次 tick 中返回给then
 
   return sequence[length]
