@@ -5,6 +5,11 @@
   "repository": "https://github.com/JJJJYYYY/promise.git",
   "author": "JJJJYYYY",
   "license": "MIT",
+  "keyword": [
+    "promise",
+    "a+",
+    "aplus"
+  ],
   "scripts": {
     "build": "node build/build.js",
     "dev": "node build/dev.js",
