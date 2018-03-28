@@ -13,3 +13,7 @@ export function isFunction (x) {
 export function isObjectOrFunction (x) {
   return x !== null && 'object,function'.includes(typeof x)
 }
+
+export function isThenable (x) {
+  return isObjectOrFunction(x) && isFunction(x.then)
+}

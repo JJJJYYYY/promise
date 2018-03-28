@@ -1,5 +1,5 @@
 const browserWindow = (typeof window !== 'undefined') ? window : undefined
-let browserGlobal = browserWindow || {}
+let browserGlobal = (typeof window !== 'undefined') ? window : {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
 const isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]'
 
@@ -8,47 +8,29 @@ const isWorker = typeof Uint8ClampedArray !== 'undefined' &&
   typeof importScripts !== 'undefined' &&
   typeof MessageChannel !== 'undefined'
 
-browserGlobal = null
-
 let triggerTick
-let queue = []
-
-export function addQueue (callback, arg, promise) {
-  queue.push({
-    callback: callback,
-    arg: arg,
-    promise: promise
-  })
-}
 
 if (isNode) {
-  triggerTick = (cb) => {
-    process.nextTick(() => {
-      cb()
-    })
-  }
+  triggerTick = process.nextTick
 } else if (BrowserMutationObserver) {
   let iterations = 0
   let node = document.createTextNode('')
   let callback = null
-  let observer = new BrowserMutationObserver(() => {
-    callback()
-  })
+  let observer = new BrowserMutationObserver(() => callback())
   observer.observer(node, { characterData: true })
 
-  triggerTick = (cb) => {
+  triggerTick = cb => {
     callback = cb
-    node.data = (iterations = ++iterations % 2)
+    node.data = ++iterations
   }
 } else if (isWorker) {
-  let callback = null
   const channel = new MessageChannel()
-  channel.port1.onmessage = () => {
-    callback()
+  triggerTick = cb => {
+    channel.port1.onmessage = cb
+    channel.port2.postMessage(0)
   }
-  triggerTick = () => channel.port2.postMessage(0)
 } else {
-  triggerTick = callback => setTimeout(callback, 0)
+  triggerTick = setTimeout
 }
 
 export default triggerTick
