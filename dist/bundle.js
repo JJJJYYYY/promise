@@ -60,51 +60,42 @@ function isObjectOrFunction(x) {
   return x !== null && 'object,function'.includes(typeof x === 'undefined' ? 'undefined' : _typeof(x));
 }
 
-var browserWindow = typeof window !== 'undefined' ? window : undefined;
-var browserGlobal = browserWindow || {};
+function isThenable(x) {
+  return isObjectOrFunction(x) && isFunction(x.then);
+}
+
+var browserGlobal = typeof window !== 'undefined' ? window : {};
 var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
 var isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
 
 // test for web worker but not in IE10
 var isWorker = typeof Uint8ClampedArray !== 'undefined' && typeof importScripts !== 'undefined' && typeof MessageChannel !== 'undefined';
 
-browserGlobal = null;
-
 var triggerTick = void 0;
 
-
 if (isNode) {
-  triggerTick = function triggerTick(cb) {
-    process.nextTick(function () {
-      cb();
-    });
-  };
+  triggerTick = process.nextTick;
 } else if (BrowserMutationObserver) {
   var iterations = 0;
   var node = document.createTextNode('');
   var callback = null;
   var observer = new BrowserMutationObserver(function () {
-    callback();
+    return callback();
   });
   observer.observer(node, { characterData: true });
 
   triggerTick = function triggerTick(cb) {
     callback = cb;
-    node.data = iterations = ++iterations % 2;
+    node.data = ++iterations;
   };
 } else if (isWorker) {
-  var _callback = null;
   var channel = new MessageChannel();
-  channel.port1.onmessage = function () {
-    _callback();
-  };
-  triggerTick = function triggerTick() {
-    return channel.port2.postMessage(0);
+  triggerTick = function triggerTick(cb) {
+    channel.port1.onmessage = cb;
+    channel.port2.postMessage(0);
   };
 } else {
-  triggerTick = function triggerTick(callback) {
-    return setTimeout(callback, 0);
-  };
+  triggerTick = setTimeout;
 }
 
 var triggerTick$1 = triggerTick;
@@ -236,6 +227,11 @@ var Promise$1 = function () {
     value: function _catch(onRejected) {
       return then(this, null, onRejected);
     }
+  }, {
+    key: 'finally',
+    value: function _finally(onFinally) {
+      return then(this, onFinally, onFinally);
+    }
   }], [{
     key: 'resolve',
     value: function resolve$$1(data) {
@@ -248,6 +244,30 @@ var Promise$1 = function () {
     value: function reject$$1(reason) {
       return new Promise(function (resolve$$1, reject$$1) {
         return reject$$1(reason);
+      });
+    }
+  }, {
+    key: 'all',
+    value: function all(promises) {
+      return new Promise(function (resolve$$1, reject$$1) {
+        var result = [];
+        function onFulfilled(value) {
+          result.push(value);
+          if (result.length === promises.length) resolve$$1(result);
+        }
+
+        promises.forEach(function (p) {
+          return isThenable(p) && p.then(onFulfilled, reject$$1);
+        });
+      });
+    }
+  }, {
+    key: 'race',
+    value: function race(promises) {
+      return new Promise(function (resolve$$1, reject$$1) {
+        promises.forEach(function (p) {
+          return isThenable(p) && p.then(resolve$$1, reject$$1);
+        });
       });
     }
   }]);
