@@ -1,4 +1,3 @@
-const browserWindow = (typeof window !== 'undefined') ? window : undefined
 let browserGlobal = (typeof window !== 'undefined') ? window : {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
 const isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]'
