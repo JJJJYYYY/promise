@@ -1,3 +1,6 @@
-#### 首次发布npm包玩具项目
-不排除以后持续维护的可能
-大部分情况应该是自用
+# jjj-promise
+a Promises/A+ specification implementation
+
+## Promise.all
+
+## Promise.race
