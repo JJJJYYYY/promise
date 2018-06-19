@@ -1,11 +1,11 @@
 # Dependency directories
 node_modules/
 
-# output directories
-dist/
+# Mac
+.DS_Store
 
 # logs
-npm-debug.log*
+*.log*
 
 # Editor directories
 .idea
