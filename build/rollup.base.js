@@ -1,5 +1,5 @@
 const babel = require('rollup-plugin-babel')
-const eslint = require('rollup-plugin-eslint')
+const { eslint } = require('rollup-plugin-eslint')
 
 module.exports = {
   input: 'src/promise.js',
@@ -10,16 +10,14 @@ module.exports = {
     }),
     babel({
       include: 'src/**',
-      runtimeHelpers: true,
-      plugins: ['external-helpers']
+      runtimeHelpers: true
     })
   ],
   output: {
-    file: 'dist/bundle.js',
+    file: 'dist/promise.js',
     format: 'umd',
     sourcemap: true,
     strict: true,
     name: 'Promise'
-  },
-  external: ['babel-polyfill']
+  }
 }
