@@ -52,14 +52,14 @@ export function resolve (promise, x) {
       let alive = true
       try {
         then.call(x, function resolvePromise (y) {
-          if (alive) resolve(promise, y)
+          alive && resolve(promise, y)
           alive = false
         }, function rejectPromise (r) {
-          if (alive) reject(promise, r)
+          alive && reject(promise, r)
           alive = false
         })
       } catch (e) {
-        if (alive) reject(promise, e) // then 执行过程出错,若未执行resolve/reject则以reject处理该promise
+        alive && reject(promise, e) // then 执行过程出错,若未执行resolve/reject则以reject处理该promise
       }
     } else {
       fulfill(promise, x)
