@@ -10,13 +10,20 @@ module.exports = {
   },
   globals: {
     onmessage: true,
-    postMessage: true
+    postMessage: true,
+    importScripts: true
   },
 
-  extends: 'standard',
+  extends: [
+    'standard',
+    "plugin:flowtype/recommended"
+  ],
   // add your custom rules here
-  'rules': {
+  rules: {
     "no-debugger": 0,
     "no-unused-expressions": 0
-  }
+  },
+  plugins: [
+    "flowtype"
+  ]
 }

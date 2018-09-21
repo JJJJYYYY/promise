@@ -1,5 +1,13 @@
 const babel = require('rollup-plugin-babel')
+const flow = require('rollup-plugin-flow')
 const { eslint } = require('rollup-plugin-eslint')
+const config = require('../package.json')
+
+const banner =
+  '/**\n' +
+  ' * ' + config.name + ' v' + config.version + '\n' +
+  ' * author: ' + config.author + '\n' +
+  ' */'
 
 module.exports = {
   input: 'src/promise.js',
@@ -8,6 +16,7 @@ module.exports = {
       include: 'src/**',
       throwOnError: true
     }),
+    flow(),
     babel({
       include: 'src/**',
       runtimeHelpers: true
@@ -18,6 +27,7 @@ module.exports = {
     format: 'umd',
     sourcemap: true,
     strict: true,
-    name: 'Promise'
+    name: 'Promise',
+    banner
   }
 }

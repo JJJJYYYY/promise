@@ -1,26 +1,30 @@
-import { isFunction, isObjectOrFunction, CONFIG, noop } from './utils'
+// @flow
+
+import { isFunc, isObjectOrFunc, CONFIG, noop, identify } from './utils'
 import triggerTick from './tick'
 
-const fulfilledDefaultFun = value => value
-const rejectedDefaultFun = reason => { throw reason }
+const fulfilledDefaultFun = identify
+const rejectedDefaultFun: RejectedHandle = reason => { throw reason }
 
-function getThen (promise, x) {
+function getThen <T> (promise: IFPromise<T>, x: any) {
   try {
     return x.then
   } catch (e) {
-    reject(promise, e)
+    reject<T>(promise, e)
   }
 }
 
-function addNextTick (promise, result) {
+function addNextTick <T> (promise: IFPromise<T>, result: any) {
   triggerTick(() => {
     let i = 0
-    let quence = promise._sequence
-    while (quence[i]) {
+    const sequence = promise._sequence
+    while (sequence[i]) {
       try {
-        resolve(quence[i], (true && quence[i + promise._status])(result))
+        const handle = sequence[i + promise._status]
+        // $FlowFixMe
+        resolve(sequence[i], handle(result))
       } catch (e) {
-        reject(quence[i], e)
+        reject(sequence[i], e)
       }
 
       i += 3
@@ -30,7 +34,7 @@ function addNextTick (promise, result) {
   })
 }
 
-function fulfill (promise, value) {
+function fulfill <T> (promise: IFPromise<T>, value: T) {
   if (promise._status === CONFIG.PENDING) {
     addNextTick(promise, value)
 
@@ -39,27 +43,27 @@ function fulfill (promise, value) {
   }
 }
 
-function readyTick (promise) {
+function readyTick <T> (promise: IFPromise<T>) {
   if (promise._status !== CONFIG.PENDING) addNextTick(promise, promise._result)
 }
 
-export function resolve (promise, x) {
+export function resolve <T> (promise: IFPromise<T>, x: any) {
   if (promise === x) { // x 与 promise 相等
-    reject(promise, new TypeError('x 不能与 promise 相等'))
-  } else if (isObjectOrFunction(x)) {
-    let then = getThen(promise, x) // 存储then，以保证 then 单次访问
-    if (isFunction(then)) {
-      let alive = true
+    reject(promise, new TypeError(`参数 [${x}] 不能与 promise 相等`))
+  } else if (isObjectOrFunc(x)) {
+    const then = getThen(promise, x) // 存储then，以保证 then 单次访问
+    if (then && isFunc(then)) {
+      let _alive = true
       try {
         then.call(x, function resolvePromise (y) {
-          alive && resolve(promise, y)
-          alive = false
+          _alive && resolve(promise, y)
+          _alive = false
         }, function rejectPromise (r) {
-          alive && reject(promise, r)
-          alive = false
+          _alive && reject(promise, r)
+          _alive = false
         })
       } catch (e) {
-        alive && reject(promise, e) // then 执行过程出错,若未执行resolve/reject则以reject处理该promise
+        _alive && reject(promise, e) // then 执行过程出错,若未执行 resolve/reject 则以 reject 处理该 promise
       }
     } else {
       fulfill(promise, x)
@@ -69,7 +73,7 @@ export function resolve (promise, x) {
   }
 }
 
-export function reject (promise, reason) {
+export function reject <T> (promise: IFPromise<T>, reason: any) {
   if (promise._status === CONFIG.PENDING) {
     addNextTick(promise, reason)
 
@@ -79,12 +83,16 @@ export function reject (promise, reason) {
 }
 
 // 这才是 then 开始
-export function then (promise, onFulfilled, onRejected) {
-  let sequence = promise._sequence
-  let length = sequence.length
+export function then <T> (
+  promise: IFPromise<T>,
+  onFulfilled: FulfilledHandle<T> = fulfilledDefaultFun,
+  onRejected: RejectedHandle = rejectedDefaultFun
+): IFPromise<T> {
+  const sequence = promise._sequence
+  const length = sequence.length
   sequence[length] = new promise.constructor(noop)
-  sequence[length + CONFIG.FULFILLED] = isFunction(onFulfilled) ? onFulfilled : fulfilledDefaultFun
-  sequence[length + CONFIG.REJECTED] = isFunction(onRejected) ? onRejected : rejectedDefaultFun
+  sequence[length + CONFIG.FULFILLED] = isFunc(onFulfilled) ? onFulfilled : fulfilledDefaultFun
+  sequence[length + CONFIG.REJECTED] = isFunc(onRejected) ? onRejected : rejectedDefaultFun
   readyTick(promise) // 对于已解决的 promise 需要将结果，在下次 tick 中返回给then
 
   return sequence[length]

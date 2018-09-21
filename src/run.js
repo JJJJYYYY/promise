@@ -1,6 +1,8 @@
+// @flow
+
 import { resolve, reject } from './then'
 
-export function runPromise (promise, handle) {
+export function runPromise <T> (promise: IFPromise<T>, handle: Function) {
   try {
     handle(function _resolve (value) {
       resolve(promise, value)

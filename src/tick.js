@@ -1,11 +1,13 @@
-let browserGlobal = (typeof window !== 'undefined') ? window : {}
+// @flow
+
+import { isDef, noop, isProcess } from './utils'
+
+let browserGlobal = isDef(window) ? window : {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
-const isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]'
+const isNode = isDef(self) && isDef(process) && isProcess(process)
 
 // test for web worker but not in IE10
-const isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-  typeof importScripts !== 'undefined' &&
-  typeof MessageChannel !== 'undefined'
+const isWorker = isDef(Uint8ClampedArray) && isDef(importScripts) && isDef(MessageChannel)
 
 let triggerTick
 
@@ -13,18 +15,19 @@ if (isNode) {
   triggerTick = process.nextTick
 } else if (BrowserMutationObserver) {
   let iterations = 0
-  let node = document.createTextNode('')
-  let callback = null
+  let callback = noop
+
+  const node = document.createTextNode('')
   let observer = new BrowserMutationObserver(() => callback())
   observer.observer(node, { characterData: true })
 
-  triggerTick = cb => {
+  triggerTick = (cb: Function) => {
     callback = cb
-    node.data = ++iterations
+    node.data = ++iterations + ''
   }
 } else if (isWorker) {
   const channel = new MessageChannel()
-  triggerTick = cb => {
+  triggerTick = (cb: Function) => {
     channel.port1.onmessage = cb
     channel.port2.postMessage(0)
   }

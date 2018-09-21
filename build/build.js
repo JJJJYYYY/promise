@@ -48,7 +48,3 @@ function write (dest, code, zip) {
 function getSize (code) {
   return (code.length / 1024).toFixed(2) + 'kb'
 }
-
-function logError (e) {
-  console.log(e)
-}
