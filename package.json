@@ -10,28 +10,29 @@
     "a+",
     "aplus"
   ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run flow && npm run lint",
+      "commit-msg": "node scripts/verify-commit-msg.js"
+    }
+  },
   "scripts": {
+    "pretest": "npm run build",
+    "prepublish": "npm run flow && npm run lint && npm run build",
     "build": "node build/build.js",
     "dev": "node build/dev.js",
-    "prepare": "npm run build",
     "flow": "flow check",
-    "test": "cross-env NODE_ENV=test mocha --require babel-core/register --file test/*.test.js",
-    "test:watch": "yarn test -w"
+    "lint": "eslint src --fix",
+    "test": "cross-env NODE_ENV=test mocha --require @babel/register --file test/*.test.js",
+    "test:watch": "npm run test -w"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0",
-    "@babel/plugin-external-helpers": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "@babel/plugin-proposal-decorators": "^7.0.0",
-    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
-    "@babel/plugin-proposal-function-sent": "^7.0.0",
-    "@babel/plugin-proposal-json-strings": "^7.0.0",
-    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
-    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-syntax-import-meta": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/preset-env": "^7.0.0",
+    "@babel/preset-flow": "^7.0.0",
+    "@babel/register": "^7.0.0",
     "babel-eslint": "^9.0.0",
     "chalk": "^2.4.1",
     "cross-env": "^5.2.0",
@@ -43,10 +44,12 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "flow-bin": "^0.80.0",
+    "husky": "^1.0.0-rc.15",
+    "jjj-promise": "^1.0.2",
     "mocha": "^5.2.0",
     "promises-aplus-tests": "^2.1.2",
     "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.0.1",
+    "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-eslint": "^5.0.0",
     "rollup-plugin-flow": "^1.1.1",
     "uglify-js": "^3.4.9",

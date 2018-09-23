@@ -1,5 +1,5 @@
 import tests from 'promises-aplus-tests'
-import Promise from '../src/promise'
+import Promise from '../dist/promise'
 
 const adapter = {
   deferred () {

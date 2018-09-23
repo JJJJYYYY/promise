@@ -11,11 +11,11 @@ export default class Promise<T> implements IFPromise<T> {
   constructor (handle: PromiseHandle<T>) {
     this._status = CONFIG.PENDING
 
-    runPromise<T>(this, handle)
+    runPromise(this, handle)
   }
 
   then (onFulfilled: FulfilledHandle<T>, onRejected: RejectedHandle): IFPromise<T> {
-    return then<T>(this, onFulfilled, onRejected)
+    return then(this, onFulfilled, onRejected)
   }
 
   catch (onRejected: RejectedHandle): IFPromise<T> {
@@ -23,15 +23,15 @@ export default class Promise<T> implements IFPromise<T> {
   }
 
   finally (onFinally: FulfilledHandle<T> | RejectedHandle): IFPromise<T> {
-    return then<T>(this, onFinally, onFinally)
+    return then(this, onFinally, onFinally)
   }
 
   static resolve (data: T): Promise<T> {
-    return new Promise<T>(resolve => resolve(data))
+    return new Promise(resolve => resolve(data))
   }
 
   static reject (reason: any): Promise<T> {
-    return new Promise<T>((resolve, reject) => reject(reason))
+    return new Promise((resolve, reject) => reject(reason))
   }
 
   static all (promises: Array<Thenable<T>>): Promise<T> {
@@ -48,7 +48,7 @@ export default class Promise<T> implements IFPromise<T> {
   }
 
   static race (promises: Array<Thenable<T>>): Promise<T> {
-    return new Promise<T>((resolve, reject) =>
+    return new Promise((resolve, reject) =>
       promises.forEach(p => isThenable(p) && p.then(resolve, reject))
     )
   }

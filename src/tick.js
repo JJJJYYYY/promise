@@ -1,13 +1,15 @@
 // @flow
 
-import { isDef, noop, isProcess } from './utils'
+import { noop } from './utils'
 
-let browserGlobal = isDef(window) ? window : {}
+let browserGlobal = (typeof window !== 'undefined') ? window : {}
 const BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver
-const isNode = isDef(self) && isDef(process) && isProcess(process)
+const isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]'
 
 // test for web worker but not in IE10
-const isWorker = isDef(Uint8ClampedArray) && isDef(importScripts) && isDef(MessageChannel)
+const isWorker = typeof Uint8ClampedArray !== 'undefined' &&
+  typeof importScripts !== 'undefined' &&
+  typeof MessageChannel !== 'undefined'
 
 let triggerTick
 

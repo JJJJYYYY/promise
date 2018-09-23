@@ -10,7 +10,7 @@ function getThen <T> (promise: IFPromise<T>, x: any) {
   try {
     return x.then
   } catch (e) {
-    reject<T>(promise, e)
+    reject(promise, e)
   }
 }
 
@@ -20,9 +20,8 @@ function addNextTick <T> (promise: IFPromise<T>, result: any) {
     const sequence = promise._sequence
     while (sequence[i]) {
       try {
-        const handle = sequence[i + promise._status]
         // $FlowFixMe
-        resolve(sequence[i], handle(result))
+        resolve(sequence[i], (1 && sequence[i + promise._status])(result))
       } catch (e) {
         reject(sequence[i], e)
       }
@@ -52,9 +51,10 @@ export function resolve <T> (promise: IFPromise<T>, x: any) {
     reject(promise, new TypeError(`参数 [${x}] 不能与 promise 相等`))
   } else if (isObjectOrFunc(x)) {
     const then = getThen(promise, x) // 存储then，以保证 then 单次访问
-    if (then && isFunc(then)) {
+    if (isFunc(then)) {
       let _alive = true
       try {
+        // $FlowFixMe
         then.call(x, function resolvePromise (y) {
           _alive && resolve(promise, y)
           _alive = false
