@@ -11,7 +11,9 @@ module.exports = {
   globals: {
     onmessage: true,
     postMessage: true,
-    importScripts: true
+    importScripts: true,
+    describe: true,
+    it: true
   },
 
   extends: [
