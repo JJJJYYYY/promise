@@ -26,7 +26,7 @@ export default class Promise<T> implements IFPromise<T> {
     return then(this, onFinally, onFinally)
   }
 
-  static resolve (data: T): Promise<T> {
+  static resolve (data?: T): Promise<T> {
     return new Promise(resolve => resolve(data))
   }
 
@@ -34,22 +34,26 @@ export default class Promise<T> implements IFPromise<T> {
     return new Promise((resolve, reject) => reject(reason))
   }
 
-  static all (promises: Array<Thenable<T>>): Promise<T> {
+  static all (promises: Array<T | Thenable<T>>): Promise<T> {
     return new Promise((resolve, reject) => {
       const result: T[] = []
+      let num = 0
       function onFulfilled (value: T, i) {
         result[i] = value
+        num++
         // $FlowFixMe
-        if (result.length === promises.length) resolve(result)
+        if (num === promises.length) resolve(result)
       }
 
-      promises.forEach((p, i) => isThenable(p) && p.then(value => onFulfilled(value, i), reject))
+      // $FlowFixMe
+      promises.forEach((p, i) => isThenable(p) ? p.then(value => onFulfilled(value, i), reject) : onFulfilled(p, i))
     })
   }
 
-  static race (promises: Array<Thenable<T>>): Promise<T> {
+  static race (promises: Array<T | Thenable<T>>): Promise<T> {
     return new Promise((resolve, reject) =>
-      promises.forEach(p => isThenable(p) && p.then(resolve, reject))
+      // $FlowFixMe
+      promises.forEach(p => isThenable(p) ? p.then(resolve, reject) : resolve(p))
     )
   }
 }

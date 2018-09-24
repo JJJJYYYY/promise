@@ -42,7 +42,7 @@ function fulfill <T> (promise: IFPromise<T>, value: T) {
   }
 }
 
-function readyTick <T> (promise: IFPromise<T>) {
+function nextTick <T> (promise: IFPromise<T>) {
   if (promise._status !== CONFIG.PENDING) addNextTick(promise, promise._result)
 }
 
@@ -93,7 +93,7 @@ export function then <T> (
   sequence[length] = new promise.constructor(noop)
   sequence[length + CONFIG.FULFILLED] = isFunc(onFulfilled) ? onFulfilled : fulfilledDefaultFun
   sequence[length + CONFIG.REJECTED] = isFunc(onRejected) ? onRejected : rejectedDefaultFun
-  readyTick(promise) // 对于已解决的 promise 需要将结果，在下次 tick 中返回给then
+  nextTick(promise) // 对于已解决的 promise 需要将结果，在下次 tick 中返回给then
 
   return sequence[length]
 }
