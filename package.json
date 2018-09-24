@@ -1,6 +1,6 @@
 {
   "name": "jjj-promise",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "main": "dist/promise.min.js",
   "repository": "https://github.com/JJJYY/promise.git",
   "author": "JJJYY<jessey9527@gmail.com>",
